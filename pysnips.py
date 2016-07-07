@@ -129,3 +129,157 @@ def progress_bar(message, seconds):
 
 
 
+
+
+
+#######################################################################################################
+################################### S T A T U S   R E P O R T E R #####################################
+#######################################################################################################
+
+########################################## MESSAGING STANDARD #########################################
+##### A standard status message from a "check" method is dictionary formatted as {'status': <pass, warning, or fail>, 'messages': [<list of dicts>]} #####
+##### The 'messages' value is a list of dicts. Each dict in the list is formatted as {<OK, WARNING, or FATAL>: <Readable message from the specific check>} #####
+#######################################################################################################
+
+##### Report on standard status messages coming from input check functions #####
+##### Input argument "statusdata" is a standard check message as defined in the "Messaging Standard" section. #####
+##### Input argument "reportlevel" can have values (onfail | onwarning | all) which set the level of report by the function #####
+##### Output is a string of prinatable status messages which report on the different checks #####
+
+def status_reporter(statusdata, reportlevel):
+	result = "" # Initialize the result string
+	for message in statusdata['messages']: # For each message in the messages list
+		if list(message)[0] == "FATAL": # If the entry in the message has a key of "FATAL"
+			result += list(message)[0] + ": " + message[list(message)[0]] + "\n"
+		if list(message)[0] == "WARNING": # If the entry in the message has a key of "WARNING"
+			if reportlevel == "onwarning" or reportlevel == "all": # And if we are reporting on warnings or all messages
+				result += list(message)[0] + ": " + message[list(message)[0]] + "\n"
+		if list(message)[0] == "OK": # If the entry in the message has a key of "OK"
+			if reportlevel == "all": # And if we are reporting on all messages
+				result += list(message)[0] + ": " + message[list(message)[0]] + "\n"
+	return result
+
+
+########################################## USAGE AND EXAMPLES #########################################
+#
+#>>> somecheckmessages = {'status': 'fail', 'messages': [{'OK': 'No illegal characters found'}, {'OK': 'Domain total length is good'}, {'OK': 'Domain first character is legal'}, {'FATAL': 'First and last character in domain must be alphanumeric'}, {'OK': 'No labels begin or end with hyphens'}, {'OK': 'No double periods or triple hyphens found'}, {'OK': 'At least one period found in the domain name'}]}
+#
+#>>> print(status_reporter(somecheckmessages, "all"))
+#
+#>>> print(status_reporter(somecheckmessages, "onfail"))
+#
+#######################################################################################################
+#######################################################################################################
+#######################################################################################################
+
+
+
+
+
+
+
+
+
+
+#######################################################################################################
+################################## C H E C K   D O M A I N   N A M E ##################################
+#######################################################################################################
+
+##### Check a domain or FQDN host name for legitimacy and proper formatting #####
+##### Input "domainname" is a string of the domain name #####
+##### Output will be a pass/fail with status messages formatted in the standard messaging format (see above for messaging format and interpreter) #####
+
+import re # Needed for regex checks
+
+def check_domainname(domainname):
+	result = {"status": "pass", "messages": []} # Start with a passing result
+	##### 1. Check that only legal characters are in name (RFC883 and RFC952) #####
+	characterregex = "^[a-zA-Z0-9\-\.]+$" # A list of the valid domain-name characters in a domain name
+	for entry in re.findall(characterregex, domainname): # For each string in the list returned by re.findall
+		if entry == domainname: # If one of the strings in the returned list equals the full domainname string
+			charactercheck = "pass" # Then all its characters are legal and it passes the check
+			result["messages"].append({"OK": "No illegal characters found"}) # Append a message to the result
+	if charactercheck == "fail": # If the check failed
+		result["messages"].append({"FATAL": "Illegal character found. Only a-z, A-Z, 0-9, period (.), and hyphen (-) allowed."})
+	##### 2. Check the Length Restrictions: 63 max char per label, 253 max total (RFC1035) #####
+	if len(domainname) <= 253: # If total length of domain name is 253 char or less
+		result["messages"].append({"OK": "Domain total length is good"})
+		labelcheck = {'passlength': 0, 'faillength': 0} # Start a tally of passed and failed labels
+		for label in domainname.split("."): # Split the domain into its labels and for each label
+			if len(label) <= 63: # If the individual label is less than or equal to 63 characters...
+				labelcheck['passlength'] = labelcheck['passlength'] + 1 # Add it as a passed label in the tally
+			else: # If it is longer than 63 characters
+				labelcheck['faillength'] = labelcheck['faillength'] + 1 # Add it as a failed label in the tally
+				result["messages"].append({"FATAL": "Label: " + label + " exceeds max label length of 63 characters"})
+		if labelcheck['faillength'] == 0: # If there are NOT any failed labels in the tally
+			maxlengthcheck = "pass" # Then all labels are passed and the check passes
+	##### 3. Check that first and last character are not a hyphen or period #####
+	firstcharregex = "^[a-zA-Z0-9]" # Match a first character of upper or lower A-Z and any digit (no hyphens or periods)
+	lastcharregex = "[a-zA-Z0-9]$" # Match a last character of upper or lower A-Z and any digit (no hyphens or periods)
+	if len(re.findall(firstcharregex, domainname)) > 0: # If the first characters produces a match
+		result["messages"].append({"OK": "Domain first character is legal"})
+		if len(re.findall(lastcharregex, domainname)) > 0: # And the last characters produces a match
+			result["messages"].append({"OK": "Domain last character is legal"})
+			firstlastcheck = "pass" # Then first and last characters are legal and the check passes
+		else:
+			result["messages"].append({"FATAL": "First and last character in domain must be alphanumeric"})
+	else:
+		result["messages"].append({"FATAL": "First and last character in domain must be alphanumeric"})
+	##### 4. Check that no labels begin or end with hyphens (https://www.icann.org/news/announcement-2000-01-07-en) #####
+	beginendhyphenregex = "\.\-|\-\." # Match any instance where a hyphen follows a period or vice-versa
+	if len(re.findall(beginendhyphenregex, domainname)) == 0: # If the regex does NOT make a match anywhere
+		result["messages"].append({"OK": "No labels begin or end with hyphens"})
+		beginendhyphencheck = "pass" # Then no names begin with a hyphen and the check passes
+	else:
+		result["messages"].append({"FATAL": "Each label in the domain name must begin and end with an alphanumeric character. No hyphens"})
+	##### 5. No double periods or triple-hyphens exist (RFC5891 for double-hyphens) #####
+	nomultiplesregex = "\.\.|\-\-\-" # Match any instance where a double period (..) or a triple hyphen (---) exist
+	if len(re.findall(nomultiplesregex, domainname)) == 0: # If the regex does NOT make a match anywhere
+		result["messages"].append({"OK": "No double periods or triple hyphens found"})
+		nomultiplescheck = "pass" # Then no double periods or triple hyphens exist and the check passes
+	else:
+		result["messages"].append({"FATAL": "No double-periods (..) or triple-hyphens (---) allowed in domain name"})
+	##### 6. There is at least one period in the domain name #####
+	periodinnameregex = "\." # Match any instance of a period
+	if len(re.findall(periodinnameregex, domainname)) > 0: # If there is at least one period in the domain name...
+		periodinnamecheck = "pass"
+		result["messages"].append({"OK": "At least one period found in the domain name"})
+	else:
+		result["messages"].append({"WARNING": "No period (.) found in domain name. FQDNs are preferred but not required."})
+	##### Make sure all checks are passed #####
+	for listentry in result["messages"]:
+		for key in listentry:
+			if key == "FATAL":
+				result["status"] = "fail"
+	return result
+
+########################################## USAGE AND EXAMPLES #########################################
+#
+########## Should pass ##########
+#>>> check_domainname("host.domain.com") # Should pass
+#>>> print(status_reporter(check_domainname("host.domain.com"), "all")) # Use reporting method to report on checks
+#
+########## Should pass ##########
+#>>> check_domainname("host.dom-ain.com") # Should pass
+#>>> print(status_reporter(check_domainname("host.dom-ain.com"), "all")) # Use reporting method to report on checks
+#
+########## Should fail ##########
+#>>> check_domainname("host.dom-ain.com-") # Should fail
+#>>> print(status_reporter(check_domainname("host.dom-ain.com-"), "all")) # Use reporting method to report on checks
+#
+#######################################################################################################
+#######################################################################################################
+#######################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+

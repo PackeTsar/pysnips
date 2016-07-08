@@ -43,3 +43,19 @@ Check a domain or FQDN host name for legitimacy and proper formatting.
 >INPUT: Input "domainname" is a string of the domain name
 
 >OUTPUT: Output will be a pass/fail with status messages formatted in the standard messaging format (see "Status Reporter" for more info)
+
+
+
+#### Check IPv4 Address
+Check for a legitimate IPv4 address
+>INPUT: Input argument "iptype" (str) can be (address | cidr) and argument "ipdata" (str) should be the IP address
+
+>OUTPUT: Output will be a pass/fail with status messages formatted in the standard messaging format (see "Status Reporter" for more info)
+
+
+
+#### Check Path
+Check a Unix/Linux file or directory path for illegal patterns/characters and for required patterns
+>INPUT: Input "pathtype" argument (str) can be "dir" or "file" (depending on if the input is a file path or a directory path)
+
+>OUTPUT: Output will be a pass/fail with status messages formatted in the standard messaging format (see "Status Reporter" for more info)

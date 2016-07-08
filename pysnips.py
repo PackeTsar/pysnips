@@ -4,7 +4,11 @@
 
 #####       Written by John W Kerns        #####
 #####      http://blog.packetsar.com       #####
-##### https://github.com/PackeTsar/radiuid #####
+#####    https://github.com/packetsar/     #####
+
+
+
+
 
 
 
@@ -132,6 +136,8 @@ def progress_bar(message, seconds):
 
 
 
+
+
 #######################################################################################################
 ################################### S T A T U S   R E P O R T E R #####################################
 #######################################################################################################
@@ -180,14 +186,13 @@ def status_reporter(statusdata, reportlevel):
 
 
 
-
 #######################################################################################################
 ################################## C H E C K   D O M A I N   N A M E ##################################
 #######################################################################################################
 
 ##### Check a domain or FQDN host name for legitimacy and proper formatting #####
 ##### Input "domainname" is a string of the domain name #####
-##### Output will be a pass/fail with status messages formatted in the standard messaging format (see above for messaging format and interpreter) #####
+##### Output will be a pass/fail with status messages formatted in the standard messaging format (see "status_reporter" method for more info) #####
 
 import re # Needed for regex checks
 
@@ -255,15 +260,12 @@ def check_domainname(domainname):
 
 ########################################## USAGE AND EXAMPLES #########################################
 #
-########## Should pass ##########
 #>>> check_domainname("host.domain.com") # Should pass
 #>>> print(status_reporter(check_domainname("host.domain.com"), "all")) # Use reporting method to report on checks
 #
-########## Should pass ##########
 #>>> check_domainname("host.dom-ain.com") # Should pass
 #>>> print(status_reporter(check_domainname("host.dom-ain.com"), "all")) # Use reporting method to report on checks
 #
-########## Should fail ##########
 #>>> check_domainname("host.dom-ain.com-") # Should fail
 #>>> print(status_reporter(check_domainname("host.dom-ain.com-"), "all")) # Use reporting method to report on checks
 #
@@ -279,7 +281,93 @@ def check_domainname(domainname):
 
 
 
+#######################################################################################################
+################################# C H E C K   I P v 4   A D D R E S S #################################
+#######################################################################################################
+
+##### Check that legit IP address or CIDR block was entered #####
+##### Input argument "iptype" (str) can be (address | cidr) and argument "ipdata" (str) should be the IP address #####
+##### Output will be a pass/fail with status messages formatted in the standard messaging format (see "status_reporter" method for more info) #####
+
+import re
+
+def check_ipv4(iptype, ipdata):
+	result = {"status": "", "messages": []} # Initialize result
+	if iptype == "address":
+		ipregex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+		result["messages"].append({"OK": "IP parsed as type: Address"})
+	elif iptype == "cidr":
+		ipregex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|1[0-9]|2[0-9]|3[0-2]?)$"
+		result["messages"].append({"OK": "IP parsed as type: CIDR"})
+	check = re.search(ipregex, ipdata)
+	if check is None:
+		result["status"] = "fail"
+		result["messages"].append({"FATAL": "Address failed parsing"})
+	else:
+		result["status"] = "pass"
+		result["messages"].append({"OK": "Address passed parsing"})
+	return result
+
+########################################## USAGE AND EXAMPLES #########################################
+#
+#>>> check_ipv4("address", "1.1.1.100") # Should pass
+#>>> print(status_reporter(check_ipv4("address", "1.1.1.100"), "all")) # Use reporting method to report on checks
+#
+#>>> check_ipv4("address", "1.1.1.256") # Should fail
+#>>> print(status_reporter(check_ipv4("address", "1.1.1.256"), "all")) # Use reporting method to report on checks
+#
+#######################################################################################################
+#######################################################################################################
+#######################################################################################################
 
 
 
 
+
+
+
+
+
+#######################################################################################################
+######################################### C H E C K   P A T H #########################################
+#######################################################################################################
+
+##### Check a Unix/Linux file or directory path for illegal patterns/characters and for required patterns #####
+##### Input "paathtype" argument (str) can be "dir" or "file" (depending on if the input is a file path or a directory path) #####
+##### Output will be a pass/fail with status messages formatted in the standard messaging format (see "status_reporter" method for more info) #####
+
+import re # Needed for regex checks
+
+def check_path(pathtype, path):
+	result = {"status": "pass", "messages": []} # Start with a passing result
+	regexblacklistdict = {"space character": " ", "double forward slash (//)": "\/\/", 'double quote (")': '"', "single quote (')": "'", "pipe character (|)": "\|", "double period (..)": "\.\.", "comma (,)": ",", "exclamation point (!)": "!", "grave accent(`)": "`", "ampersand (&)": "&", "asterisk (*)": "\*", "left parenthesis [(]": "\(", "right parenthesis [)]": "\)"} # Set common blacklist characters and patterns with keys as friendly names and values as the regex patterns
+	regexrequiredict = {"begins with /":"^\/"} # Set common required patterns with keys as friendly names and values as the regex patterns
+	if pathtype == "dir": # if the path type is "dir"
+		regexrequiredict.update({"ends with /": "\/$"}) # add additional patterns to requirements dict
+	elif pathtype == "file": # if the path type is "file"
+		regexblacklistdict.update({"ends with /": "\/$"}) # add additional patterns to blacklist dict
+	for key in regexblacklistdict: # For every entry in the blacklist dict
+		if len(re.findall(regexblacklistdict[key], path)) > 0: # If a pattern from the blacklist dict is matched in the path data
+			result["status"] = 'fail' # Set the result to fail
+			result["messages"].append({"FATAL": "Pattern Not Allowed: " + key}) # Append an error message to a failed result
+		else:
+			result["messages"].append({"OK": "Pattern Not Found: " + key}) # Append an OK status message
+	for key in regexrequiredict: # For every entry in the requirement dict
+		if len(re.findall(regexrequiredict[key], path)) == 0: # If the pattern is not found in the path
+			result["status"] = 'fail' # Set the result to fail
+			result["messages"].append({"FATAL": "Pattern Required: " + key}) # Append an error message to a failed result
+		else:
+			result["messages"].append({"OK": "Pattern Found: " + key}) # Append an OK status message
+	return result
+
+########################################## USAGE AND EXAMPLES #########################################
+#
+#>>> check_path("file", "/etc/pysnipsdir/somefile") # Should pass
+#>>> check_path("file", "/etc/pysnip!sdir/somefile/") # Should fail
+#
+#>>> print(status_reporter(check_path("file", "/etc/pysnipsdir/somefile"), "all")) # Use reporting method to report on checks (should pass)
+#>>> print(status_reporter(check_path("file", "/etc/pysnip!sdir/somefile/"), "all")) # Use reporting method to report on checks (should fail)
+#
+#######################################################################################################
+#######################################################################################################
+#######################################################################################################

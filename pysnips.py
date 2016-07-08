@@ -333,7 +333,7 @@ def check_ipv4(iptype, ipdata):
 #######################################################################################################
 
 ##### Check a Unix/Linux file or directory path for illegal patterns/characters and for required patterns #####
-##### Input "paathtype" argument (str) can be "dir" or "file" (depending on if the input is a file path or a directory path) #####
+##### Input "pathtype" argument (str) can be "dir" or "file" (depending on if the input is a file path or a directory path) #####
 ##### Output will be a pass/fail with status messages formatted in the standard messaging format (see "status_reporter" method for more info) #####
 
 import re # Needed for regex checks

@@ -73,6 +73,10 @@ Check a Unix/Linux file or directory path for illegal patterns/characters and fo
 >OUTPUT: Output will be a pass/fail with status messages formatted in the standard messaging format (see "Status Reporter" for more info)
 
 
+
+
+##File System
+
 #### List Files
 List all files in a directory path and subdirs
 >INPUT: Input `dirpath` (str) is the path of a directory to search

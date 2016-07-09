@@ -59,3 +59,13 @@ Check a Unix/Linux file or directory path for illegal patterns/characters and fo
 >INPUT: Input "pathtype" argument (str) can be "dir" or "file" (depending on if the input is a file path or a directory path)
 
 >OUTPUT: Output will be a pass/fail with status messages formatted in the standard messaging format (see "Status Reporter" for more info)
+
+
+
+#### UI Color
+Easy method to write color to a str output then switch back to default black color (Works in Linux only)
+>INPUT: Input argument "input" (str) is a string of text to color
+
+>INPUT: Input argument "inputcolor" (obj var) is one of the pre-defined colors
+
+>OUTPUT: Output is the printable string colored appropriately

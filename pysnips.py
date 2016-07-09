@@ -371,3 +371,44 @@ def check_path(pathtype, path):
 #######################################################################################################
 #######################################################################################################
 #######################################################################################################
+
+
+
+
+
+
+
+
+
+#######################################################################################################
+########################################### U I   C O L O R ###########################################
+#######################################################################################################
+
+##### Easy method to write color to a str output then switch back to default black color (Works in Linux only) #####
+##### Input argument "input" (str) is a string of text to color #####
+##### Input argument "inputcolor" (obj var) is one of the pre-defined colors #####
+##### Output is the printable string colored appropriately #####
+
+class UI(object):
+	def __init__(self):
+		##### Set different ANSI colors #####
+		self.black = '\033[0m'
+		self.red = '\033[91m'
+		self.green = '\033[92m'
+		self.yellow = '\033[93m'
+		self.blue = '\033[94m'
+		self.magenta = '\033[95m'
+		self.cyan = '\033[96m'
+		self.white = '\033[97m'
+	def color(self, input, inputcolor):
+		result = inputcolor + input + self.black # Set color on input string, then set color back to black (default color)
+		return result
+
+########################################## USAGE AND EXAMPLES #########################################
+#
+#>>> ui = UI() # Instantiate the class
+#>>> print ui.color("This prints as GREEN!!!", ui.green) # Prints a green output
+#
+#######################################################################################################
+#######################################################################################################
+#######################################################################################################

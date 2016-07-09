@@ -381,6 +381,43 @@ def check_path(pathtype, path):
 
 
 #######################################################################################################
+######################################### L I S T   F I L E S #########################################
+#######################################################################################################
+
+##### List all files in a directory path and subdirs #####
+##### Input argument "dirpath" (str) is the path of a directory to search #####
+##### Input for a Linux path can look like "/root/somedir/". Windows must use double-backslash like "C:\\somedir" #####
+##### Output is a list of all files (full filepath) in the search directory #####
+
+import os # Needed for interface with OS
+
+def list_files(dirpath):
+	result = [] # Start with empty list
+	for root, directories, filenames in os.walk(dirpath): # Use os.walk generator to iterate through file system
+		for filename in filenames: # For each file in the list of filenames
+			entry = os.path.join(root, filename) # Assemble the full filepath
+			result.append(entry) # And append it to the list of files
+	return result
+
+########################################## USAGE AND EXAMPLES #########################################
+#
+#>>> list_files("/root") # Linux/Unix example
+#
+#>>> list_files("C:\\Windows\\Temp") # Windows example
+#
+#######################################################################################################
+#######################################################################################################
+#######################################################################################################
+
+
+
+
+
+
+
+
+
+#######################################################################################################
 ########################################### U I   C O L O R ###########################################
 #######################################################################################################
 
@@ -391,7 +428,7 @@ def check_path(pathtype, path):
 
 class UI(object):
 	def __init__(self):
-		##### Set different ANSI colors #####
+		##### Set different ANSI color codes #####
 		self.black = '\033[0m'
 		self.red = '\033[91m'
 		self.green = '\033[92m'

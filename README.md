@@ -1,6 +1,6 @@
-# pysnips
+# PySnips ![PySnips][logo]
 
-Pysnips is a compilation of useful python functions which all work in both Python2 and Python3, and without ANY non-native modules. You can import pysnips as a module, or just grab a specific method and use it directly in your code.
+A compilation of useful python functions which all work in both Python2 and Python3, and without ANY non-native modules. You can import pysnips as a module, or just grab a specific method and use it directly in your code.
 
 
 
@@ -84,3 +84,5 @@ List all files in a directory path and subdirs
 >*Input for a Linux path can look like `/root/somedir/`. Windows must use double-backslash like `C:\\somedir`*
 
 >OUTPUT: Output is a list of all files (full filepath) in the search directory
+
+[logo]: http://www.packetsar.com/wp-content/uploads/pysnips-tiny.png

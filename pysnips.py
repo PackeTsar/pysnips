@@ -42,7 +42,7 @@ class UI(object):
 ########################################## USAGE AND EXAMPLES #########################################
 #
 #>>> ui = UI() # Instantiate the class
-#>>> print ui.color("This prints as GREEN!!!", ui.green) # Prints a green output
+#>>> print(ui.color("This prints as GREEN!!!", ui.green)) # Prints a green output
 #
 #######################################################################################################
 #######################################################################################################
@@ -55,6 +55,8 @@ class UI(object):
 ##### Create a table of data from a list of dictionaries where the key in each dict is the header and the val is the column value #####
 ##### The tabledata input is the list of dictionaries and the column order is an ordered list of how the columns should be displayed #####
 ##### The output is a printable table with automatically spaced columns, centered headers and values #####
+
+import re # Needed to calculate column widths when using colors
 
 def make_table(columnorder, tabledata):
 	##### Check and fix input type #####
@@ -71,7 +73,7 @@ def make_table(columnorder, tabledata):
 		datalengthdict.update({columnhead: len(columnhead)}) # Create a key in the length dict with a value which is the length of the header
 	for row in tabledata: # For each row entry in the tabledata list of dicts
 		for item in row: # For column entry in that row
-			if len(row[item]) > datalengthdict[item]: # If the length of this column entry is longer than the current longest entry
+			if len(re.sub(r'\x1b[^m]*m', "",  row[item])) > datalengthdict[item]: # If the length of this column entry is longer than the current longest entry
 				datalengthdict[item] = len(row[item]) # Then change the value of entry
 	##### Calculate total table width #####
 	totalwidth = 0 # Initialize at 0
@@ -100,8 +102,8 @@ def make_table(columnorder, tabledata):
 		columnqty = len(columnorder) # Set a column counter so we can detect the last entry in this row
 		for column in columnorder: # For each value in this row, but using the correct order from column order
 			spacing = {"before": 0, "after": 0} # Initialize the before and after spacing for that header value before the columnsep
-			spacing["before"] = int((datalengthdict[column] - len(row[column])) / 2) # Calculate the before spacing
-			spacing["after"] = int((datalengthdict[column] - len(row[column])) - spacing["before"]) # Calculate the after spacing
+			spacing["before"] = int((datalengthdict[column] - len(re.sub(r'\x1b[^m]*m', "",  row[column]))) / 2) # Calculate the before spacing
+			spacing["after"] = int((datalengthdict[column] - len(re.sub(r'\x1b[^m]*m', "",  row[column]))) - spacing["before"]) # Calculate the after spacing
 			result += columnspace + spacing["before"] * " " + row[column] + spacing["after"] * " " + columnspace # Add the entry to the row with spacing
 			if columnqty == 1: # If this is the last entry in this row
 				result += tablewrap + "\n" + tablewrap # Add the wrapper, a line break, and start the next row

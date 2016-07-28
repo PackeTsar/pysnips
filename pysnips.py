@@ -72,7 +72,7 @@ def make_table(columnorder, tabledata):
 	for columnhead in columnorder: # For each column in the columnorder input
 		datalengthdict.update({columnhead: len(columnhead)}) # Create a key in the length dict with a value which is the length of the header
 	for row in tabledata: # For each row entry in the tabledata list of dicts
-		for item in row: # For column entry in that row
+		for item in columnorder: # For column entry in that row
 			if len(re.sub(r'\x1b[^m]*m', "",  row[item])) > datalengthdict[item]: # If the length of this column entry is longer than the current longest entry
 				datalengthdict[item] = len(row[item]) # Then change the value of entry
 	##### Calculate total table width #####

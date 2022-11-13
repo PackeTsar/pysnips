@@ -85,4 +85,4 @@ List all files in a directory path and subdirs
 
 >OUTPUT: Output is a list of all files (full filepath) in the search directory
 
-[logo]: http://www.packetsar.com/wp-content/uploads/pysnips-tiny.png
+[logo]: /pysnips-tiny.png
